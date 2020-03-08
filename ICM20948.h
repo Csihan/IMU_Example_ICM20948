@@ -12,8 +12,8 @@
 #include "UART.h"
 #include "Wire.h"
 
-#ifndef ICM20948_H_
-#define ICM20948_H_
+#ifndef DEVICE_ID_H_
+#define DEVICE_ID_H_
 
 /*
  * ICM-20948 Slave Address
@@ -196,16 +196,29 @@
 #define TEMP_DLPF_34HZ 0x04
 #define TEMP_DLPF_17HZ 0x05
 #define TEMP_DLPF_9HZ 0x06
-#define MAG_RESOLUTION_14BIT 0x00
-#define MAG_RESOLUTION_16BIT 0x10
 #define MAG_POWER_DOWN_MODE 0x00
 #define MAG_SINGLE_MODE 0x01
-#define MAG_CONTINUOUS1_MODE 0x02
-#define MAG_CONTINUOUS2_MODE 0x06
-#define MAG_EXTER_TRIGGER_MODE 0x04
-#define MAG_SELF_TEST_MODE 0x08
-#define MAG_FUSE_ROM_ACCESS_MODE 0x0F
+#define MAG_CONTINUOUS_MODE1 0x02
+#define MAG_CONTINUOUS_MODE2 0x04
+#define MAG_CONTINUOUS_MODE3 0x06
+#define MAG_CONTINUOUS_MODE4 0x08
 #define TEMP_SENSITIVITY 333.87f
+
+// AK09916 레지스터
+#define AK09916		0x0C
+#define WIA2		0x01
+#define ST1			0x10
+#define HXL			0x11
+#define HXH			0x12
+#define HYL			0x13
+#define HYH			0x14
+#define HZL			0x15
+#define HZH			0x16
+#define ST2			0x18
+#define CNTL2		0x31
+#define CNTL3		0x32
+#define TS1			0x33
+#define TS2			0x34
 
 // Error Define
 #define ROVERDYN_SUCCESS 0x00
@@ -222,7 +235,7 @@ public:
 	uint8_t setCfgAcc(uint8_t ACCEL_DLPF_SEL, uint8_t ACCEL_FS_SEL, uint8_t ACCEL_AVG_SEL,  bool Fchoice_b);
 	uint8_t setCfgGyro(uint8_t GYRO_DLPF_SEL, uint8_t GYRO_FS_SEL, uint8_t GYRO_AVG_SEL, bool Fchoice_b);
 	uint8_t setCfgTemp(uint8_t TEMP_DLPF_SEL);
-	uint8_t setMagMode(uint8_t RESOLUTION, uint8_t MODE);
+	uint8_t setMagMode(uint8_t MODE);
 	int16_t *getMagASA();
 	int16_t *getRawAcc();
 	int16_t *getRawGyro();

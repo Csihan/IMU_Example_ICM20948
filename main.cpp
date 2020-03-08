@@ -13,14 +13,16 @@ int main(void){
 
 	char ch[60];
 	while(1){
-		int16_t *ACCEL, *GYRO;
+		int16_t *ACCEL, *GYRO, *MAG;
 		float TEMP;
 		ACCEL = ICM20948.getRawAcc();
 		GYRO = ICM20948.getRawGyro();
+		MAG = ICM20948.getRawMag();
 		TEMP = ICM20948.getTemp(0);
-		sprintf(ch, "Accel : %5d %5d %5d  Gyro : %4d %4d %4d  Temp : %3d",
+		sprintf(ch, "Accel : %5d %5d %5d  Gyro : %4d %4d %4d  MAG : %4d %4d %4d  Temp : %3d",
 				ACCEL[0], ACCEL[1], ACCEL[2],
 				GYRO[0], GYRO[1], GYRO[2],
+				MAG[0], MAG[1], MAG[2],
 				(int16_t)TEMP);
 		Serial.println(ch);
 	}

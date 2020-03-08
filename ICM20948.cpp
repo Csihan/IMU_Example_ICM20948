@@ -24,23 +24,29 @@ uint8_t _ICM20948::Init(){
 	writeData(DEVICE_ID, PWR_MGMT_1, 0x01);
 	writeData(DEVICE_ID, PWR_MGMT_2, 0x00);
 
+	// 바이패스 모드 설정
+	writeData(DEVICE_ID, INT_PIN_CFG, (0x01 << 1));
+
 	// Device ID 읽기
 	// 제대로 연결이 되어 있지 않으면 0x01(에러)를 리턴
 	if(getDeviceId() != 234){
 		return ROVERDYN_ERROR_NO_DATA;
-	}
+	}/*
+	if(getMagId() != 0x09){
+		return ROVERDYN_ERROR_NO_DATA;
+	}*/
 	char ch[40];
-	sprintf(ch, "Who AM I : 0x%02X", getDeviceId());
+	sprintf(ch, "Device ID : 0x%02X(IMU), 0x%02X(MAG)", getDeviceId(), getMagId());
 	Serial.println(ch);
-
-	// 바이패스 모드 설정
-	writeData(DEVICE_ID, INT_PIN_CFG, 0x02);
 
 	// 자이로스코프 설정
 	setCfgGyro(DLPF_GYRO_6HZ, GYRO_RANGE_1000DPS, GYRO_AVG_1X, true);
 
 	// 가속도 센서 설정
 	setCfgAcc(DLPF_ACC_6HZ, ACCEL_RANGE_2G, ACCEL_AVG_4X, true);
+
+	// 지자기 센서 설정
+	setMagMode(MAG_CONTINUOUS_MODE2);
 
 	// 온도 센서 설정
 	setCfgTemp(TEMP_DLPF_34HZ);
@@ -77,8 +83,15 @@ uint8_t _ICM20948::getDeviceId(){
 }
 
 uint8_t _ICM20948::getMagId(){
-	// Who AM I 레지스터로부터 데이터를 읽어오는 함수
+	// 지자기 센서의 WIA 레지스터로부터 데이터를 읽어오는 함수
 	uint8_t output = 0;
+
+	// Get Data
+	Wire.beginTransmission(AK09916);
+	Wire.write(WIA2);
+	Wire.requestFrom(AK09916, 1);
+	output = Wire.read();
+	Wire.endTransmission(true);
 
 	return output;
 }
@@ -139,13 +152,12 @@ uint8_t _ICM20948::setCfgTemp(uint8_t TEMP_DLPF_SET){
 	return err_code;
 }
 
-uint8_t _ICM20948::setMagMode(uint8_t RESOLUTION, uint8_t MODE){
+uint8_t _ICM20948::setMagMode(uint8_t MODE){
 	// 지자기 센서 설정 함수
 	uint8_t err_code = 0;
-/*
-	// 레지스터에 값 전송
-	writeData(AK8963, CNTL1, RESOLUTION | MODE);
-*/
+
+	// Mode 설정
+	writeData(AK09916, CNTL2, MODE);
 	return err_code;
 }
 
@@ -194,31 +206,39 @@ int16_t* _ICM20948::getRawGyro(){
 }
 
 int16_t* _ICM20948::getRawMag(){
+	// 지자기 센서 Raw 데이터 취득 함수
+	static int16_t output[3] = {0};
 
-	// 지자기 센서 Raw 데이터 읽기 함수
-	static int16_t output[3] = {0};/*
-	int16_t st2 = 0;
+	// Select Bank
+	writeData(DEVICE_ID, REG_BANK_SEL, 0x00);
 
-	// ST1 레지스터 읽음
-	Wire.beginTransmission(AK8963);
+	// Get Data
+	Wire.beginTransmission(AK09916);
 	Wire.write(ST1);
-	Wire.requestFrom(AK8963, 1);
-	uint8_t st1 = Wire.read();
+	Wire.requestFrom(AK09916, 1);
+	bool st1 = Wire.read() & 0x01;
 	Wire.endTransmission(true);
-
-	// DRDY 레지스터 체크
-	if((st1 & 0x01) == 0x01){
-		Wire.beginTransmission(AK8963);
+	if(st1){
+		// Read Mag Data
+		Wire.beginTransmission(AK09916);
 		Wire.write(HXL);
-		Wire.requestFrom(AK8963, 7);
+		Wire.requestFrom(AK09916, 6);
 		for(uint8_t i=0;i<3;i++){
 			output[i] = Wire.read();
-			output[i] = Wire.read() << 8 | output[i];
+			output[i] = (Wire.read() << 8) | output[i];
 		}
-		st2 = Wire.read();
+		Wire.endTransmission(true);
+
+		// Read ST2 register
+		Wire.beginTransmission(AK09916);
+		Wire.write(ST2);
+		Wire.requestFrom(AK09916, 1);
+		bool st2 = (Wire.read() >> 3) & 0x01;
+		if(st2){
+			return 0;
+		}
 		Wire.endTransmission(true);
 	}
-*/
 	return output;
 }
 
