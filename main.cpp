@@ -19,11 +19,10 @@ int main(void){
 		GYRO = ICM20948.getRawGyro();
 		MAG = ICM20948.getRawMag();
 		TEMP = ICM20948.getTemp(0);
-		sprintf(ch, "Accel : %5d %5d %5d  Gyro : %4d %4d %4d  MAG : %4d %4d %4d  Temp : %3d",
+		sprintf(ch, "%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d,%5d",
 				ACCEL[0], ACCEL[1], ACCEL[2],
 				GYRO[0], GYRO[1], GYRO[2],
-				MAG[0], MAG[1], MAG[2],
-				(int16_t)TEMP);
+				MAG[0], MAG[1], MAG[2]);
 		Serial.println(ch);
 	}
 
